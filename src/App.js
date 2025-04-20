@@ -1,24 +1,23 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Anasayfa from './Anasayfa';
+import GirisYap from './GirisYap';
+import KayitOl from './KayitOl';
+import AdminPanel from './AdminPanel'; 
+import AdaySayfa from './AdaySayfa';
+
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Anasayfa />} />
+        <Route path="/giris" element={<GirisYap />} />
+        <Route path="/kayit" element={<KayitOl />} />
+        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/aday" element={<AdaySayfa />} />
+      </Routes>
+    </Router>
   );
 }
 
