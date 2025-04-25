@@ -22,6 +22,19 @@ function Anasayfa() {
 
   return (
     <div className="container">
+      {/* Sabit logo (sayfanın sol üst köşesi) */}
+      <img 
+        src="/kou.png" 
+        alt="Kocaeli Üniversitesi" 
+        style={{
+          position: 'fixed',
+          top: 10,
+          left: 10,
+          height: '100px',
+          zIndex: 1000
+        }}
+      />
+
       <header className="header">
         <Link to="/giris" className="button">Giriş Yap</Link>
         <Link to="/kayit" className="button">Kayıt Ol</Link>
