@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const kadroKriterleriRouter = require('./routes/kadroKriterleri');
+const AWS = require('aws-sdk');
 
 
 const app = express();
@@ -185,3 +186,36 @@ app.listen(5000, () => {
   console.log('Sunucu 5000 portunda çalışıyor 💻');
 });
 
+// Yeni Başvuru API'si
+app.post('/api/basvuru', async (req, res) => {
+  const basvuru = req.body;
+
+  try {
+    await uploadToS3(basvuru); // Adım 3'te yazacağımız fonksiyon
+    res.status(201).json({ message: 'Başvuru AWS S3\'e kaydedildi.' });
+  } catch (error) {
+    console.error('Başvuru kaydetme hatası:', error);
+    res.status(500).json({ error: 'Başvuru kaydedilemedi.' });
+  }
+});
+
+// AWS bağlantı ayarları
+AWS.config.update({
+  accessKeyId: process.env.AKIAQLVQQO7RXNB7YWEW,
+  secretAccessKey: process.env.qXvyFlF5kz/Ce3D8lnAiag+E5dkhMEaLbMeFUk9L,
+  region: 'eu-central-1' // Frankfurt seçtiysen
+});
+
+const s3 = new AWS.S3();
+
+// AWS'ye veri yükleme fonksiyonu
+async function uploadToS3(basvuruData) {
+  const params = {
+    Bucket: 'akademik-basvurular', // Buraya kendi AWS S3 bucket adını yaz
+    Key: `basvurular/${Date.now()}.json`,
+    Body: JSON.stringify(basvuruData),
+    ContentType: 'application/json',
+  };
+
+  return s3.upload(params).promise();
+}

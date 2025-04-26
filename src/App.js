@@ -8,6 +8,7 @@ import AdaySayfa from './AdaySayfa';
 import BelgeYuklemeSayfasi from './BelgeYuklemeSayfasi';
 import BasvuruTamamlandi from './BasvuruTamamlandi';
 import YoneticiPanel from './YoneticiPanel'; 
+import BasvuruSayfasi from './BasvuruSayfasi';
 
 
 
@@ -64,6 +65,7 @@ function App() {
           <Route path="/belge-yukle/:basvuruId" element={<BelgeYuklemeSayfasi />} />
           <Route path="/basvuru-tamamlandi" element={<BasvuruTamamlandi />} />
           <Route path="/yonetici" element={<YoneticiPanel />} />
+          <Route path="/basvuru" element={<BasvuruSayfasi />} />
 
 
         </Routes>
