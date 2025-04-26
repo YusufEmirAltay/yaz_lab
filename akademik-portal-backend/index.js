@@ -21,7 +21,7 @@ const pool = new Pool({
 
 // Test endpointi
 app.get('/', (req, res) => {
-  res.send('Backend çalışıyor kraliçem 👑');
+  res.send('Backend çalışıyor');
 });
 
 // Kayıt endpointi (sadece adaylar için)
