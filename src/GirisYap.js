@@ -34,7 +34,9 @@ function GirisYap() {
           navigate('/juri');
         } else if (role === 'aday') {
           navigate('/aday');
-        } else {
+        } else if (role === 'yönetici') {
+          navigate('/yonetici');}
+          else {
           setMessage('❌ Bilinmeyen rol.');
         }
       } else {

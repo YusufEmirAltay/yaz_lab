@@ -1,12 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
+const kadroKriterleriRouter = require('./routes/kadroKriterleri');
+
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/kadro-kriterleri', kadroKriterleriRouter);
 
-// Veritabanı bağlantısı
+
+// PostgreSQL bağlantısı
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
@@ -15,7 +19,7 @@ const pool = new Pool({
   port: 5432,
 });
 
-// Test endpoint
+// Test endpointi
 app.get('/', (req, res) => {
   res.send('Backend çalışıyor kraliçem 👑');
 });
@@ -30,17 +34,17 @@ app.post('/register', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'INSERT INTO users (id, tc, name, email, password, role) VALUES (gen_random_uuid(), $1, $2, $3, $4, $5) RETURNING *',
+      'INSERT INTO users (id, tc, name, email, password, role, created_at) VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, NOW()) RETURNING *',
       [tc, name, email, password, role]
     );
     res.status(201).json({ message: 'Kayıt başarılı 🎉', user: result.rows[0] });
   } catch (error) {
-    console.error(error);
+    console.error('POST /register hata:', error);
     res.status(500).json({ error: 'Kayıt başarısız 😢' });
   }
 });
 
-// Giriş endpointi (TC + şifre ile)
+// Giriş endpointi
 app.post('/api/login', async (req, res) => {
   const { tc, password } = req.body;
 
@@ -57,7 +61,7 @@ app.post('/api/login', async (req, res) => {
       res.status(401).json({ error: 'TC veya şifre yanlış' });
     }
   } catch (err) {
-    console.error('Login error:', err);
+    console.error('POST /api/login hata:', err);
     res.status(500).json({ error: 'Sunucu hatası' });
   }
 });
@@ -68,7 +72,7 @@ app.get('/api/ilanlar', async (req, res) => {
     const result = await pool.query('SELECT * FROM ilanlar ORDER BY created_at DESC');
     res.json(result.rows);
   } catch (error) {
-    console.error('GET ilanlar hata:', error);
+    console.error('GET /api/ilanlar hata:', error);
     res.status(500).json({ error: 'İlanlar alınamadı' });
   }
 });
@@ -84,7 +88,7 @@ app.post('/api/ilanlar', async (req, res) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
-    console.error('POST ilanlar hata:', error);
+    console.error('POST /api/ilanlar hata:', error);
     res.status(500).json({ error: 'İlan eklenemedi' });
   }
 });
@@ -101,7 +105,7 @@ app.put('/api/ilanlar/:id', async (req, res) => {
     );
     res.json({ message: 'İlan güncellendi' });
   } catch (error) {
-    console.error('PUT ilanlar hata:', error);
+    console.error('PUT /api/ilanlar hata:', error);
     res.status(500).json({ error: 'İlan güncellenemedi' });
   }
 });
@@ -114,20 +118,31 @@ app.delete('/api/ilanlar/:id', async (req, res) => {
     await pool.query('DELETE FROM ilanlar WHERE id = $1', [id]);
     res.json({ message: 'İlan silindi' });
   } catch (error) {
-    console.error('DELETE ilanlar hata:', error);
+    console.error('DELETE /api/ilanlar hata:', error);
     res.status(500).json({ error: 'İlan silinemedi' });
   }
 });
 
-// Aday başvuruları getir
+// Adayın başvurularını getir
 app.get('/api/basvurular/:tc', async (req, res) => {
   const { tc } = req.params;
 
   try {
-    const result = await pool.query('SELECT ilan_id FROM basvurular WHERE tc = $1', [tc]);
+    const userResult = await pool.query('SELECT id FROM users WHERE tc = $1', [tc]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+    }
+
+    const user_id = userResult.rows[0].id;
+
+    const result = await pool.query(
+      'SELECT ilan_id FROM basvurular WHERE user_id = $1',
+      [user_id]
+    );
+
     res.json(result.rows);
-  } catch (err) {
-    console.error('GET basvurular hata:', err);
+  } catch (error) {
+    console.error('GET /api/basvurular hata:', error);
     res.status(500).json({ error: 'Başvurular alınamadı' });
   }
 });
@@ -135,17 +150,38 @@ app.get('/api/basvurular/:tc', async (req, res) => {
 // Aday başvuru yap
 app.post('/api/basvur', async (req, res) => {
   const { tc, ilan_id } = req.body;
-
+  console.log('BACKEND GİRDİ → tc:', tc, 'ilan_id:', ilan_id);
   try {
-    await pool.query('INSERT INTO basvurular (tc, ilan_id, basvuru_tarihi) VALUES ($1, $2, NOW())', [tc, ilan_id]);
-    res.status(201).json({ message: 'Başvuru başarılı' });
-  } catch (err) {
-    console.error('POST basvur hata:', err);
-    res.status(500).json({ error: 'Başvuru başarısız' });
+    const userResult = await pool.query('SELECT id FROM users WHERE tc = $1', [tc]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+    }
+
+    const user_id = userResult.rows[0].id;
+
+    const check = await pool.query(
+      'SELECT * FROM basvurular WHERE user_id = $1 AND ilan_id = $2',
+      [user_id, ilan_id]
+    );
+
+    if (check.rows.length > 0) {
+      return res.status(409).json({ error: 'Zaten bu ilana başvurmuşsun' });
+    }
+
+    const result = await pool.query(
+      'INSERT INTO basvurular (id, user_id, ilan_id, durum, basvuru_tarihi) VALUES (gen_random_uuid(), $1, $2, $3, NOW()) RETURNING *',
+      [user_id, ilan_id, 'beklemede']
+    );
+
+    res.status(201).json({ message: 'Başvuru başarıyla eklendi', basvuru: result.rows[0] });
+  } catch (error) {
+    console.error('POST /api/basvur hata:', error); 
+    res.status(500).json({ error: 'Başvuru eklenemedi' });
   }
 });
 
-// Sunucu
+// Sunucu başlat
 app.listen(5000, () => {
   console.log('Sunucu 5000 portunda çalışıyor 💻');
 });
+

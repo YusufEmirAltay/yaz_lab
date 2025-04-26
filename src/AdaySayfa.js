@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import './index.css';
+import Header from './components/Header';
+
+  
 
 const AdaySayfa = () => {
   const [ilanlar, setIlanlar] = useState([]);
@@ -9,18 +12,24 @@ const AdaySayfa = () => {
   const tc = localStorage.getItem('tc');
 
   useEffect(() => {
+    // Tüm ilanları çek
     fetch('http://localhost:5000/api/ilanlar')
       .then((res) => res.json())
       .then((data) => setIlanlar(data))
       .catch((err) => console.error('İlanlar alınamadı:', err));
 
+    // Adayın daha önce başvurduğu ilanları çek
     fetch(`http://localhost:5000/api/basvurular/${tc}`)
       .then((res) => res.json())
-      .then((data) => setBasvurulanIlanlar(data.map(b => b.ilan_id)))
+      .then((data) => {
+        const ilanIdler = data.map((b) => b.ilan_id);
+        setBasvurulanIlanlar(ilanIdler);
+      })
       .catch((err) => console.error('Başvurular alınamadı:', err));
-  }, []);
+  }, [tc]);
 
   const basvur = (ilanId) => {
+    console.log('tc:', tc, 'ilan_id:', ilanId);
     if (basvurulanIlanlar.includes(ilanId)) {
       setMesaj('Bu ilana zaten başvurdun!');
       return;
@@ -43,7 +52,9 @@ const AdaySayfa = () => {
   };
 
   return (
+    
     <div className="container">
+      <Header />
       <h1>Aday Paneli</h1>
       {mesaj && <p>{mesaj}</p>}
 
@@ -58,8 +69,13 @@ const AdaySayfa = () => {
                 {new Date(ilan.bitis_tarihi).toLocaleDateString('tr-TR')}
               </em>
             </p>
-            <button onClick={() => basvur(ilan.id)} disabled={basvurulanIlanlar.includes(ilan.id)}>
-              {basvurulanIlanlar.includes(ilan.id) ? 'Zaten Başvurdun' : 'Başvur'}
+            <button
+              onClick={() => basvur(ilan.id)}
+              disabled={basvurulanIlanlar.includes(ilan.id)}
+            >
+              {basvurulanIlanlar.includes(ilan.id)
+                ? 'Zaten Başvurdun'
+                : 'Başvur'}
             </button>
           </li>
         ))}

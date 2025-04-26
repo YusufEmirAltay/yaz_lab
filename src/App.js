@@ -5,6 +5,11 @@ import GirisYap from './GirisYap';
 import KayitOl from './KayitOl';
 import AdminPanel from './AdminPanel'; 
 import AdaySayfa from './AdaySayfa';
+import BelgeYuklemeSayfasi from './BelgeYuklemeSayfasi';
+import BasvuruTamamlandi from './BasvuruTamamlandi';
+import YoneticiPanel from './YoneticiPanel'; 
+
+
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -25,6 +30,7 @@ function App() {
   return (
     <Router>
       <div>
+      
         <button 
           onClick={() => setDarkMode(!darkMode)} 
           style={{ 
@@ -55,6 +61,11 @@ function App() {
           <Route path="/kayit" element={<KayitOl />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/aday" element={<AdaySayfa />} />
+          <Route path="/belge-yukle/:basvuruId" element={<BelgeYuklemeSayfasi />} />
+          <Route path="/basvuru-tamamlandi" element={<BasvuruTamamlandi />} />
+          <Route path="/yonetici" element={<YoneticiPanel />} />
+
+
         </Routes>
       </div>
     </Router>
