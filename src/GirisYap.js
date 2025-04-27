@@ -23,7 +23,7 @@ function GirisYap() {
       if (response.ok) {
         const role = data.role;
         localStorage.setItem('tc', tc); // Giriş yapan kişinin TC'sini sakla
-        setMessage(`✅ Giriş başarılı! (${role})`);
+        setMessage(`Giriş başarılı! (${role})`);
 
         // role'a göre yönlendirme
         if (role === 'admin') {
@@ -33,17 +33,23 @@ function GirisYap() {
         } else if (role === 'juri') {
           navigate('/juri');
         } else if (role === 'aday') {
-          navigate('/aday');
+          const bekleyenBasvuru = localStorage.getItem('bekleyenBasvuru');
+          if (bekleyenBasvuru) {
+            localStorage.removeItem('bekleyenBasvuru'); // artık işimiz kalmadı, temizle
+            navigate(`/basvuru/${bekleyenBasvuru}`);
+          } else {
+            navigate('/aday');
+          }        
         } else if (role === 'yönetici') {
           navigate('/yonetici');}
           else {
-          setMessage('❌ Bilinmeyen rol.');
+          setMessage(' Bilinmeyen rol.');
         }
       } else {
-        setMessage(`❌ Giriş başarısız: ${data.error}`);
+        setMessage(` Giriş başarısız: ${data.error}`);
       }
     } catch (err) {
-      setMessage('❌ Sunucu hatası');
+      setMessage(' Sunucu hatası');
     }
   };
 

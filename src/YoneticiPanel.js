@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Header from './components/Header';
 
 function YoneticiPanel() {
   const [kadroTuru, setKadroTuru] = useState('');
@@ -51,6 +52,7 @@ function YoneticiPanel() {
 
   return (
     <div style={{ padding: '20px' }}>
+      <Header />
       <h1>Yönetici Paneli</h1>
 
       <div style={{ marginBottom: '10px' }}>

@@ -1,5 +1,6 @@
-// AdminPanel.js
+
 import React, { useState, useEffect } from 'react';
+import Header from './components/Header';
 
 const formatTarih = (tarih) => {
   if (!tarih) return '';
@@ -93,6 +94,7 @@ const AdminPanel = () => {
 
   return (
     <div style={{ padding: '20px' }}>
+       <Header /> 
       <h2>{duzenlemeModu ? 'İlanı Düzenle' : 'Yeni İlan Ekle'}</h2>
       <form onSubmit={handleSubmit}>
         <label>İlan Başlığı:</label>

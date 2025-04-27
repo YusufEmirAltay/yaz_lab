@@ -3,6 +3,8 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const kadroKriterleriRouter = require('./routes/kadroKriterleri');
 const AWS = require('aws-sdk');
+require('dotenv').config();
+
 
 
 const app = express();
@@ -203,7 +205,7 @@ app.post('/api/basvuru', async (req, res) => {
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: 'eu-central-1' // Frankfurt seçtiysen
+  region: process.env.AWS_REGION,
 });
 
 const s3 = new AWS.S3();
@@ -211,7 +213,7 @@ const s3 = new AWS.S3();
 // AWS'ye veri yükleme fonksiyonu
 async function uploadToS3(basvuruData) {
   const params = {
-    Bucket: 'akademik-basvurular', // Buraya kendi AWS S3 bucket adını yaz
+    Bucket: process.env.AWS_BUCKET_NAME, // Buraya kendi AWS S3 bucket adını yaz
     Key: `basvurular/${Date.now()}.json`,
     Body: JSON.stringify(basvuruData),
     ContentType: 'application/json',
@@ -219,3 +221,26 @@ async function uploadToS3(basvuruData) {
 
   return s3.upload(params).promise();
 }
+
+// Başvuruları kullanıcı adı ve ilan başlığı ile getir
+app.get('/api/basvurular', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        basvurular.id AS basvuru_id,
+        users.name AS aday_adi,
+        ilanlar.baslik AS ilan_basligi,
+        basvurular.durum,
+        basvurular.basvuru_tarihi
+      FROM basvurular
+      JOIN users ON basvurular.user_id = users.id
+      JOIN ilanlar ON basvurular.ilan_id = ilanlar.id
+      ORDER BY basvurular.basvuru_tarihi DESC
+    `);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('GET /api/basvurular hata:', error);
+    res.status(500).json({ error: 'Başvurular alınamadı' });
+  }
+});

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import './index.css';
 import Header from './components/Header';
+import { useNavigate } from 'react-router-dom';
 
   
 
 const AdaySayfa = () => {
+  const navigate = useNavigate();
   const [ilanlar, setIlanlar] = useState([]);
   const [basvurulanIlanlar, setBasvurulanIlanlar] = useState([]);
   const [mesaj, setMesaj] = useState('');
@@ -70,13 +72,14 @@ const AdaySayfa = () => {
               </em>
             </p>
             <button
-              onClick={() => basvur(ilan.id)}
-              disabled={basvurulanIlanlar.includes(ilan.id)}
-            >
-              {basvurulanIlanlar.includes(ilan.id)
-                ? 'Zaten Başvurdun'
-                : 'Başvur'}
-            </button>
+            onClick={() => {
+              localStorage.setItem('ilanId', ilan.id);
+              navigate('/basvuru');
+            }}
+            disabled={basvurulanIlanlar.includes(ilan.id)}
+          >
+            {basvurulanIlanlar.includes(ilan.id) ? 'Zaten Başvurdun' : 'Başvur'}
+          </button>
           </li>
         ))}
       </ul>

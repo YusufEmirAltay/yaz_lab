@@ -29,31 +29,51 @@ function BasvuruSayfasi() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
+    const tc = localStorage.getItem('tc');
+    const ilanId = localStorage.getItem('ilanId');
+  
     try {
-      const response = await fetch('http://localhost:5000/api/basvuru', {
+      console.log('AWS isteği başlıyor...');
+      const awsResponse = await fetch('http://localhost:5000/api/basvuru', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-
-      if (response.ok) {
-        alert('Başvuru başarıyla kaydedildi!');
-        setFormData({
-          adSoyad: '',
-          tarih: '',
-          kurum: '',
-          kadro: '',
-          makaleler: [{ yazar: '', makaleAdi: '', dergiAdi: '', puan: '' }],
-        });
-      } else {
-        alert('Başvuru kaydedilemedi.');
+  
+      if (!awsResponse.ok) {
+        console.error('AWS isteği başarısız:', await awsResponse.text());
+        throw new Error('AWS S3 kaydı başarısız.');
       }
+      console.log('AWS isteği başarılı!');
+  
+      console.log('Veritabanı isteği başlıyor...');
+      const dbResponse = await fetch('http://localhost:5000/api/basvur', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tc: tc, ilan_id: ilanId }),
+      });
+  
+      if (!dbResponse.ok) {
+        console.error('Veritabanı isteği başarısız:', await dbResponse.text());
+        throw new Error('Veritabanı kaydı başarısız.');
+      }
+      console.log('Veritabanı isteği başarılı!');
+  
+      alert('Başvuru başarıyla kaydedildi!');
+      setFormData({
+        adSoyad: '',
+        tarih: '',
+        kurum: '',
+        kadro: '',
+        makaleler: [{ yazar: '', makaleAdi: '', dergiAdi: '', puan: '' }],
+      });
     } catch (error) {
-      console.error('Hata:', error);
-      alert('Sunucu hatası oluştu.');
+      console.error('handleSubmit hatası:', error);
+      alert('Başvuru sırasında hata oluştu.');
     }
   };
+  
 
   return (
     <div style={{ maxWidth: '600px', margin: 'auto', padding: '20px' }}>
