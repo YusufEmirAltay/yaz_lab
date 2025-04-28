@@ -9,6 +9,8 @@ import BelgeYuklemeSayfasi from './BelgeYuklemeSayfasi';
 import BasvuruTamamlandi from './BasvuruTamamlandi';
 import YoneticiPanel from './YoneticiPanel'; 
 import BasvuruSayfasi from './BasvuruSayfasi';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 
@@ -66,6 +68,7 @@ function App() {
           <Route path="/basvuru-tamamlandi" element={<BasvuruTamamlandi />} />
           <Route path="/yonetici" element={<YoneticiPanel />} />
           <Route path="/basvuru" element={<BasvuruSayfasi />} />
+          <ToastContainer position="top-right" autoClose={3000} />
 
 
         </Routes>
