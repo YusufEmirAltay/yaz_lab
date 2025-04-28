@@ -1,17 +1,23 @@
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
-const kadroKriterleriRouter = require('./routes/kadroKriterleri');
+const fileUpload = require('express-fileupload');
 const AWS = require('aws-sdk');
+<<<<<<< HEAD
 require('dotenv').config();
 
 
+=======
+const kadroKriterleriRouter = require('./routes/kadroKriterleri');
+>>>>>>> 94ed197d0c2f82d4539d333eb60d5090fedb784b
 
 const app = express();
+
+// Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(fileUpload());
 app.use('/kadro-kriterleri', kadroKriterleriRouter);
-
 
 // PostgreSQL bağlantısı
 const pool = new Pool({
@@ -22,12 +28,33 @@ const pool = new Pool({
   port: 5432,
 });
 
-// Test endpointi
+// AWS bağlantı ayarları
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: 'eu-central-1' // Frankfurt örnek
+});
+
+const s3 = new AWS.S3();
+
+// AWS'ye veri yükleme fonksiyonu
+async function uploadToS3(basvuruData) {
+  const params = {
+    Bucket: 'akademik-basvurular', // Kendi S3 bucket adın
+    Key: `basvurular/${Date.now()}.json`,
+    Body: JSON.stringify(basvuruData),
+    ContentType: 'application/json',
+  };
+
+  return s3.upload(params).promise();
+}
+
+// API: Test
 app.get('/', (req, res) => {
   res.send('Backend çalışıyor');
 });
 
-// Kayıt endpointi (sadece adaylar için)
+// API: Kayıt (sadece adaylar)
 app.post('/register', async (req, res) => {
   const { tc, name, email, password, role } = req.body;
 
@@ -47,7 +74,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Giriş endpointi
+// API: Giriş
 app.post('/api/login', async (req, res) => {
   const { tc, password } = req.body;
 
@@ -69,7 +96,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Tüm ilanları getir
+// API: İlanlar
 app.get('/api/ilanlar', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM ilanlar ORDER BY created_at DESC');
@@ -80,7 +107,7 @@ app.get('/api/ilanlar', async (req, res) => {
   }
 });
 
-// Yeni ilan ekle
+// API: Yeni ilan ekle
 app.post('/api/ilanlar', async (req, res) => {
   const { baslik, aciklama, kadro_turu, baslangic_tarihi, bitis_tarihi } = req.body;
 
@@ -96,7 +123,7 @@ app.post('/api/ilanlar', async (req, res) => {
   }
 });
 
-// İlan güncelle
+// API: İlan güncelle
 app.put('/api/ilanlar/:id', async (req, res) => {
   const { id } = req.params;
   const { baslik, aciklama, kadro_turu, baslangic_tarihi, bitis_tarihi } = req.body;
@@ -113,7 +140,7 @@ app.put('/api/ilanlar/:id', async (req, res) => {
   }
 });
 
-// İlan sil
+// API: İlan sil
 app.delete('/api/ilanlar/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -126,7 +153,7 @@ app.delete('/api/ilanlar/:id', async (req, res) => {
   }
 });
 
-// Adayın başvurularını getir
+// API: Aday başvurularını getir
 app.get('/api/basvurular/:tc', async (req, res) => {
   const { tc } = req.params;
 
@@ -150,10 +177,11 @@ app.get('/api/basvurular/:tc', async (req, res) => {
   }
 });
 
-// Aday başvuru yap
+// API: Aday başvuru yap
 app.post('/api/basvur', async (req, res) => {
   const { tc, ilan_id } = req.body;
   console.log('BACKEND GİRDİ → tc:', tc, 'ilan_id:', ilan_id);
+
   try {
     const userResult = await pool.query('SELECT id FROM users WHERE tc = $1', [tc]);
     if (userResult.rows.length === 0) {
@@ -183,17 +211,11 @@ app.post('/api/basvur', async (req, res) => {
   }
 });
 
-// Sunucu başlat
-app.listen(5000, () => {
-  console.log('Sunucu 5000 portunda çalışıyor 💻');
-});
-
-// Yeni Başvuru API'si
+// API: Başvuru formu ile birlikte dosya kaydetme
 app.post('/api/basvuru', async (req, res) => {
-  const basvuru = req.body;
-
   try {
-    await uploadToS3(basvuru); // Adım 3'te yazacağımız fonksiyon
+    const basvuru = req.body;
+    await uploadToS3(basvuru);
     res.status(201).json({ message: 'Başvuru AWS S3\'e kaydedildi.' });
   } catch (error) {
     console.error('Başvuru kaydetme hatası:', error);
@@ -201,6 +223,7 @@ app.post('/api/basvuru', async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // AWS bağlantı ayarları
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -244,3 +267,9 @@ app.get('/api/basvurular', async (req, res) => {
     res.status(500).json({ error: 'Başvurular alınamadı' });
   }
 });
+=======
+// Sunucu başlat
+app.listen(5000, () => {
+  console.log('Sunucu 5000 portunda çalışıyor 💻');
+});
+>>>>>>> 94ed197d0c2f82d4539d333eb60d5090fedb784b
