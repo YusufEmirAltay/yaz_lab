@@ -9,14 +9,10 @@ import BelgeYuklemeSayfasi from './BelgeYuklemeSayfasi';
 import BasvuruTamamlandi from './BasvuruTamamlandi';
 import YoneticiPanel from './YoneticiPanel'; 
 import BasvuruSayfasi from './BasvuruSayfasi';
-<<<<<<< HEAD
 import JuriUyesiPaneli from './JuriUyesiPaneli';
-=======
+import JuriBasvuruDetay from './JuriBasvuruDetay';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
->>>>>>> 94ed197d0c2f82d4539d333eb60d5090fedb784b
-
-
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -37,7 +33,6 @@ function App() {
   return (
     <Router>
       <div>
-      
         <button 
           onClick={() => setDarkMode(!darkMode)} 
           style={{ 
@@ -71,16 +66,13 @@ function App() {
           <Route path="/belge-yukle/:basvuruId" element={<BelgeYuklemeSayfasi />} />
           <Route path="/basvuru-tamamlandi" element={<BasvuruTamamlandi />} />
           <Route path="/yonetici" element={<YoneticiPanel />} />
-<<<<<<< HEAD
+          <Route path="/basvuru" element={<BasvuruSayfasi />} />
           <Route path="/basvuru/:ilanId" element={<BasvuruSayfasi />} />
           <Route path="/juri" element={<JuriUyesiPaneli />} />
-=======
-          <Route path="/basvuru" element={<BasvuruSayfasi />} />
-          <ToastContainer position="top-right" autoClose={3000} />
->>>>>>> 94ed197d0c2f82d4539d333eb60d5090fedb784b
-
-
+          <Route path="/juri/basvuru/:id" element={<JuriBasvuruDetay />} />
         </Routes>
+
+        <ToastContainer position="top-right" autoClose={3000} />
       </div>
     </Router>
   );

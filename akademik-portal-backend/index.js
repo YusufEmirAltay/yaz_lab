@@ -3,13 +3,8 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const fileUpload = require('express-fileupload');
 const AWS = require('aws-sdk');
-<<<<<<< HEAD
-require('dotenv').config();
-
-
-=======
 const kadroKriterleriRouter = require('./routes/kadroKriterleri');
->>>>>>> 94ed197d0c2f82d4539d333eb60d5090fedb784b
+require('dotenv').config();
 
 const app = express();
 
@@ -223,28 +218,6 @@ app.post('/api/basvuru', async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-// AWS bağlantı ayarları
-AWS.config.update({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION,
-});
-
-const s3 = new AWS.S3();
-
-// AWS'ye veri yükleme fonksiyonu
-async function uploadToS3(basvuruData) {
-  const params = {
-    Bucket: process.env.AWS_BUCKET_NAME, // Buraya kendi AWS S3 bucket adını yaz
-    Key: `basvurular/${Date.now()}.json`,
-    Body: JSON.stringify(basvuruData),
-    ContentType: 'application/json',
-  };
-
-  return s3.upload(params).promise();
-}
-
 // Başvuruları kullanıcı adı ve ilan başlığı ile getir
 app.get('/api/basvurular', async (req, res) => {
   try {
@@ -267,9 +240,25 @@ app.get('/api/basvurular', async (req, res) => {
     res.status(500).json({ error: 'Başvurular alınamadı' });
   }
 });
-=======
+
+// API: Başvuruya ait belgeleri getir
+app.get('/api/belgeler/:basvuruId', async (req, res) => {
+  const { basvuruId } = req.params;
+
+  try {
+    const result = await pool.query(
+      'SELECT * FROM belgeler WHERE basvuru_id = $1',
+      [basvuruId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('GET /api/belgeler hata:', error);
+    res.status(500).json({ error: 'Belgeler alınamadı' });
+  }
+});
+
+
 // Sunucu başlat
 app.listen(5000, () => {
   console.log('Sunucu 5000 portunda çalışıyor 💻');
 });
->>>>>>> 94ed197d0c2f82d4539d333eb60d5090fedb784b

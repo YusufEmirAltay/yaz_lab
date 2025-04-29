@@ -43,12 +43,10 @@ function BasvuruSayfasi() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-<<<<<<< HEAD
-  
+
     const tc = localStorage.getItem('tc');
     const ilanId = localStorage.getItem('ilanId');
-  
-=======
+
     const data = new FormData();
 
     // Ana bilgiler
@@ -73,21 +71,17 @@ function BasvuruSayfasi() {
       });
     });
 
->>>>>>> 94ed197d0c2f82d4539d333eb60d5090fedb784b
     try {
       console.log('AWS isteği başlıyor...');
       const awsResponse = await fetch('http://localhost:5000/api/basvuru', {
         method: 'POST',
         body: data,
       });
-<<<<<<< HEAD
-  
+
       if (!awsResponse.ok) {
         console.error('AWS isteği başarısız:', await awsResponse.text());
         throw new Error('AWS S3 kaydı başarısız.');
-=======
-
-      if (response.ok) {
+      } else {
         toast.success('Başvuru başarıyla kaydedildi!');
         setFormData({
           adSoyad: '',
@@ -106,44 +100,29 @@ function BasvuruSayfasi() {
           oduller: [{ baslik: '', dosya: null }],
           digerFaaliyetler: [{ baslik: '', dosya: null }]
         });
-      } else {
-        toast.error('Başvuru kaydedilemedi.');
->>>>>>> 94ed197d0c2f82d4539d333eb60d5090fedb784b
       }
       console.log('AWS isteği başarılı!');
-  
+
       console.log('Veritabanı isteği başlıyor...');
       const dbResponse = await fetch('http://localhost:5000/api/basvur', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tc: tc, ilan_id: ilanId }),
       });
-  
+
       if (!dbResponse.ok) {
         console.error('Veritabanı isteği başarısız:', await dbResponse.text());
         throw new Error('Veritabanı kaydı başarısız.');
       }
       console.log('Veritabanı isteği başarılı!');
-  
+
       alert('Başvuru başarıyla kaydedildi!');
-      setFormData({
-        adSoyad: '',
-        tarih: '',
-        kurum: '',
-        kadro: '',
-        makaleler: [{ yazar: '', makaleAdi: '', dergiAdi: '', puan: '' }],
-      });
     } catch (error) {
-<<<<<<< HEAD
       console.error('handleSubmit hatası:', error);
       alert('Başvuru sırasında hata oluştu.');
-=======
-      console.error('Hata:', error);
       toast.error('Sunucu hatası oluştu.');
->>>>>>> 94ed197d0c2f82d4539d333eb60d5090fedb784b
     }
   };
-  
 
   return (
     <div style={{ maxWidth: '800px', margin: 'auto', padding: '20px' }}>
