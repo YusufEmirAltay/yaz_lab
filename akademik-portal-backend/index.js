@@ -5,6 +5,9 @@ const fileUpload = require('express-fileupload');
 const AWS = require('aws-sdk');
 const kadroKriterleriRouter = require('./routes/kadroKriterleri');
 require('dotenv').config();
+const PDFDocument = require('pdfkit');
+const streamBuffers = require('stream-buffers');
+
 
 const app = express();
 
@@ -33,16 +36,51 @@ AWS.config.update({
 const s3 = new AWS.S3();
 
 // AWS'ye veri yükleme fonksiyonu
-async function uploadToS3(basvuruData) {
-  const params = {
-    Bucket: 'akademik-basvurular', // Kendi S3 bucket adın
-    Key: `basvurular/${Date.now()}.json`,
-    Body: JSON.stringify(basvuruData),
-    ContentType: 'application/json',
-  };
+async function uploadPDFToS3FromJSON(jsonData) {
+  const doc = new PDFDocument();
+  const bufferStream = new streamBuffers.WritableStreamBuffer();
 
-  return s3.upload(params).promise();
+  doc.pipe(bufferStream);
+
+  doc.fontSize(16).text('Akademik Başvuru Dökümü', { align: 'center' });
+  doc.moveDown();
+
+  doc.fontSize(12).text(`Ad Soyad: ${jsonData.adSoyad}`);
+  doc.text(`Kurum: ${jsonData.kurum}`);
+  doc.text(`Kadro: ${jsonData.kadro}`);
+  doc.text(`Tarih: ${jsonData.tarih}`);
+  doc.moveDown();
+
+  const sections = jsonData.sections || {};
+  for (const key in sections) {
+    const entries = sections[key];
+    if (!entries || entries.length === 0) continue;
+
+    doc.fontSize(14).text(`📌 ${key.toUpperCase()}`, { underline: true });
+    entries.forEach((item, i) => {
+      doc.fontSize(12).text(`${i + 1}. ${item.baslik || 'Başlıksız'}${item.dosya ? ` (Dosya: ${item.dosya})` : ''}`);
+    });
+    doc.moveDown();
+  }
+
+  doc.end();
+
+  const pdfBuffer = await new Promise((resolve, reject) => {
+    bufferStream.on('finish', () => resolve(bufferStream.getBuffer()));
+    bufferStream.on('error', reject);
+  });
+
+  const result = await s3.upload({
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: `basvurular/${Date.now()}_basvuru.pdf`,
+    Body: pdfBuffer,
+    ContentType: 'application/pdf',
+  }).promise();
+
+  console.log('📄 PDF başarıyla yüklendi:', result.Location);
+  return result.Location;
 }
+
 
 // API: Test
 app.get('/', (req, res) => {
@@ -210,13 +248,17 @@ app.post('/api/basvur', async (req, res) => {
 app.post('/api/basvuru', async (req, res) => {
   try {
     const basvuru = req.body;
-    await uploadToS3(basvuru);
-    res.status(201).json({ message: 'Başvuru AWS S3\'e kaydedildi.' });
+
+    await uploadToS3(basvuru);             // JSON kaydı
+    await uploadPDFToS3FromJSON(basvuru);  // PDF üretimi ve yükleme
+
+    res.status(201).json({ message: 'Başvuru AWS S3\'e JSON ve PDF olarak kaydedildi.' });
   } catch (error) {
     console.error('Başvuru kaydetme hatası:', error);
     res.status(500).json({ error: 'Başvuru kaydedilemedi.' });
   }
 });
+
 
 // Başvuruları kullanıcı adı ve ilan başlığı ile getir
 app.get('/api/basvurular', async (req, res) => {

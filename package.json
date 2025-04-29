@@ -14,12 +14,14 @@
     "express-fileupload": "^1.5.1",
     "file-saver": "^2.0.5",
     "pdf-lib": "^1.17.1",
+    "pdfkit": "^0.17.0",
     "pizzip": "^3.1.8",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.5.0",
     "react-scripts": "5.0.1",
     "react-toastify": "^11.0.5",
+    "stream-buffers": "^3.0.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
