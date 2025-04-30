@@ -1,3 +1,5 @@
+// index.js - Güncellenmiş ve tamamlanmış sürüm
+
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
@@ -7,7 +9,6 @@ const kadroKriterleriRouter = require('./routes/kadroKriterleri');
 require('dotenv').config();
 const PDFDocument = require('pdfkit');
 const streamBuffers = require('stream-buffers');
-
 
 const app = express();
 
@@ -35,7 +36,7 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
-// AWS'ye veri yükleme fonksiyonu
+// PDF oluşturup AWS'ye yükleyen fonksiyon
 async function uploadPDFToS3FromJSON(jsonData) {
   const doc = new PDFDocument();
   const bufferStream = new streamBuffers.WritableStreamBuffer();
@@ -64,11 +65,11 @@ async function uploadPDFToS3FromJSON(jsonData) {
   }
 
   doc.end();
-
   const pdfBuffer = await new Promise((resolve, reject) => {
-    bufferStream.on('finish', () => resolve(bufferStream.getBuffer()));
+    bufferStream.on('finish', () => resolve(bufferStream.getContents()));
     bufferStream.on('error', reject);
   });
+  
 
   const result = await s3.upload({
     Bucket: process.env.AWS_BUCKET_NAME,
@@ -81,13 +82,12 @@ async function uploadPDFToS3FromJSON(jsonData) {
   return result.Location;
 }
 
-
-// API: Test
+// Test endpointi
 app.get('/', (req, res) => {
   res.send('Backend çalışıyor');
 });
 
-// API: Kayıt (sadece adaylar)
+// Aday kayıt
 app.post('/register', async (req, res) => {
   const { tc, name, email, password, role } = req.body;
 
@@ -107,7 +107,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// API: Giriş
+// Giriş
 app.post('/api/login', async (req, res) => {
   const { tc, password } = req.body;
 
@@ -129,7 +129,46 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// API: İlanlar
+// Başvuru gönderme ve PDF olarak AWS'ye yükleme
+app.post('/api/basvuru', async (req, res) => {
+  try {
+    const formData = req.body;
+
+    const basvuru = {
+      adSoyad: formData.adSoyad,
+      tarih: formData.tarih,
+      kurum: formData.kurum,
+      kadro: formData.kadro,
+      sections: {}
+    };
+
+    const sections = [
+      'makaleler', 'bildiriler', 'kitaplar', 'sanatsalCalismalar',
+      'tasarimlar', 'projeler', 'atiflar', 'egitimFaaliyetleri',
+      'idariGorevler', 'oduller', 'digerFaaliyetler'
+    ];
+
+    sections.forEach(section => {
+      basvuru.sections[section] = [];
+      let index = 0;
+      while (formData[`${section}[${index}][baslik]`]) {
+        basvuru.sections[section].push({
+          baslik: formData[`${section}[${index}][baslik]`],
+          dosya: req.files?.[`${section}[${index}][dosya]`]?.name || null
+        });
+        index++;
+      }
+    });
+
+    await uploadPDFToS3FromJSON(basvuru);
+    res.status(201).json({ message: 'Başvuru AWS S3\'e PDF olarak kaydedildi.' });
+  } catch (error) {
+    console.error('Başvuru kaydetme hatası:', error);
+    res.status(500).json({ error: 'Başvuru kaydedilemedi.' });
+  }
+});
+
+// İlanlar listeleme
 app.get('/api/ilanlar', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM ilanlar ORDER BY created_at DESC');
@@ -140,7 +179,7 @@ app.get('/api/ilanlar', async (req, res) => {
   }
 });
 
-// API: Yeni ilan ekle
+// Yeni ilan ekle
 app.post('/api/ilanlar', async (req, res) => {
   const { baslik, aciklama, kadro_turu, baslangic_tarihi, bitis_tarihi } = req.body;
 
@@ -156,7 +195,7 @@ app.post('/api/ilanlar', async (req, res) => {
   }
 });
 
-// API: İlan güncelle
+// İlan güncelle
 app.put('/api/ilanlar/:id', async (req, res) => {
   const { id } = req.params;
   const { baslik, aciklama, kadro_turu, baslangic_tarihi, bitis_tarihi } = req.body;
@@ -173,7 +212,7 @@ app.put('/api/ilanlar/:id', async (req, res) => {
   }
 });
 
-// API: İlan sil
+// İlan sil
 app.delete('/api/ilanlar/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -186,7 +225,7 @@ app.delete('/api/ilanlar/:id', async (req, res) => {
   }
 });
 
-// API: Aday başvurularını getir
+// Adayın başvurularını getir
 app.get('/api/basvurular/:tc', async (req, res) => {
   const { tc } = req.params;
 
@@ -198,10 +237,7 @@ app.get('/api/basvurular/:tc', async (req, res) => {
 
     const user_id = userResult.rows[0].id;
 
-    const result = await pool.query(
-      'SELECT ilan_id FROM basvurular WHERE user_id = $1',
-      [user_id]
-    );
+    const result = await pool.query('SELECT ilan_id FROM basvurular WHERE user_id = $1', [user_id]);
 
     res.json(result.rows);
   } catch (error) {
@@ -210,57 +246,7 @@ app.get('/api/basvurular/:tc', async (req, res) => {
   }
 });
 
-// API: Aday başvuru yap
-app.post('/api/basvur', async (req, res) => {
-  const { tc, ilan_id } = req.body;
-  console.log('BACKEND GİRDİ → tc:', tc, 'ilan_id:', ilan_id);
-
-  try {
-    const userResult = await pool.query('SELECT id FROM users WHERE tc = $1', [tc]);
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
-    }
-
-    const user_id = userResult.rows[0].id;
-
-    const check = await pool.query(
-      'SELECT * FROM basvurular WHERE user_id = $1 AND ilan_id = $2',
-      [user_id, ilan_id]
-    );
-
-    if (check.rows.length > 0) {
-      return res.status(409).json({ error: 'Zaten bu ilana başvurmuşsun' });
-    }
-
-    const result = await pool.query(
-      'INSERT INTO basvurular (id, user_id, ilan_id, durum, basvuru_tarihi) VALUES (gen_random_uuid(), $1, $2, $3, NOW()) RETURNING *',
-      [user_id, ilan_id, 'beklemede']
-    );
-
-    res.status(201).json({ message: 'Başvuru başarıyla eklendi', basvuru: result.rows[0] });
-  } catch (error) {
-    console.error('POST /api/basvur hata:', error); 
-    res.status(500).json({ error: 'Başvuru eklenemedi' });
-  }
-});
-
-// API: Başvuru formu ile birlikte dosya kaydetme
-app.post('/api/basvuru', async (req, res) => {
-  try {
-    const basvuru = req.body;
-
-    await uploadToS3(basvuru);             // JSON kaydı
-    await uploadPDFToS3FromJSON(basvuru);  // PDF üretimi ve yükleme
-
-    res.status(201).json({ message: 'Başvuru AWS S3\'e JSON ve PDF olarak kaydedildi.' });
-  } catch (error) {
-    console.error('Başvuru kaydetme hatası:', error);
-    res.status(500).json({ error: 'Başvuru kaydedilemedi.' });
-  }
-});
-
-
-// Başvuruları kullanıcı adı ve ilan başlığı ile getir
+// Başvuruları listele
 app.get('/api/basvurular', async (req, res) => {
   try {
     const result = await pool.query(`
@@ -283,15 +269,12 @@ app.get('/api/basvurular', async (req, res) => {
   }
 });
 
-// API: Başvuruya ait belgeleri getir
+// Başvuruya ait belgeleri getir
 app.get('/api/belgeler/:basvuruId', async (req, res) => {
   const { basvuruId } = req.params;
 
   try {
-    const result = await pool.query(
-      'SELECT * FROM belgeler WHERE basvuru_id = $1',
-      [basvuruId]
-    );
+    const result = await pool.query('SELECT * FROM belgeler WHERE basvuru_id = $1', [basvuruId]);
     res.json(result.rows);
   } catch (error) {
     console.error('GET /api/belgeler hata:', error);
@@ -299,6 +282,40 @@ app.get('/api/belgeler/:basvuruId', async (req, res) => {
   }
 });
 
+
+app.post('/api/basvur', async (req, res) => {
+  const { tc, ilan_id } = req.body;
+
+  try {
+    // Kullanıcının id'sini TC ile al
+    const userResult = await pool.query('SELECT id FROM users WHERE tc = $1', [tc]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
+    }
+
+    const userId = userResult.rows[0].id;
+
+    // Zaten başvurdu mu kontrol et
+    const checkResult = await pool.query(
+      'SELECT * FROM basvurular WHERE user_id = $1 AND ilan_id = $2',
+      [userId, ilan_id]
+    );
+    if (checkResult.rows.length > 0) {
+      return res.status(400).json({ message: 'Zaten başvurdun' });
+    }
+
+    // Başvuru kaydını ekle
+    await pool.query(
+      'INSERT INTO basvurular (user_id, ilan_id, durum, basvuru_tarihi) VALUES ($1, $2, $3, NOW())',
+      [userId, ilan_id, 'Başvuru Yapıldı']
+    );
+
+    res.status(201).json({ message: 'Başvuru başarılı' });
+  } catch (err) {
+    console.error('Başvuru hatası:', err.message);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
 
 // Sunucu başlat
 app.listen(5000, () => {

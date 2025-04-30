@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 function BasvuruSayfasi() {
+  const { ilanId } = useParams();
+
+  useEffect(() => {
+    if (ilanId) {
+      localStorage.setItem('ilanId', ilanId);
+    }
+  }, [ilanId]);
+
   const [formData, setFormData] = useState({
     adSoyad: '',
     tarih: '',
@@ -48,6 +57,8 @@ function BasvuruSayfasi() {
     const ilanId = localStorage.getItem('ilanId');
 
     const data = new FormData();
+    data.append('tc', tc);
+    data.append('ilanId', ilanId);
 
     // Ana bilgiler
     data.append('adSoyad', formData.adSoyad);
@@ -55,7 +66,7 @@ function BasvuruSayfasi() {
     data.append('kurum', formData.kurum);
     data.append('kadro', formData.kadro);
 
-    // Listeler (Makaleler, Bildiriler, vb.)
+    // Listeler
     const sections = [
       'makaleler', 'bildiriler', 'kitaplar', 'sanatsalCalismalar',
       'tasarimlar', 'projeler', 'atiflar', 'egitimFaaliyetleri',
@@ -81,45 +92,30 @@ function BasvuruSayfasi() {
       if (!awsResponse.ok) {
         console.error('AWS isteği başarısız:', await awsResponse.text());
         throw new Error('AWS S3 kaydı başarısız.');
-      } else {
-        toast.success('Başvuru başarıyla kaydedildi!');
-        setFormData({
-          adSoyad: '',
-          tarih: '',
-          kurum: '',
-          kadro: '',
-          makaleler: [{ baslik: '', dosya: null }],
-          bildiriler: [{ baslik: '', dosya: null }],
-          kitaplar: [{ baslik: '', dosya: null }],
-          sanatsalCalismalar: [{ baslik: '', dosya: null }],
-          tasarimlar: [{ baslik: '', dosya: null }],
-          projeler: [{ baslik: '', dosya: null }],
-          atiflar: [{ baslik: '', dosya: null }],
-          egitimFaaliyetleri: [{ baslik: '', dosya: null }],
-          idariGorevler: [{ baslik: '', dosya: null }],
-          oduller: [{ baslik: '', dosya: null }],
-          digerFaaliyetler: [{ baslik: '', dosya: null }]
-        });
       }
-      console.log('AWS isteği başarılı!');
 
-      console.log('Veritabanı isteği başlıyor...');
-      const dbResponse = await fetch('http://localhost:5000/api/basvur', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tc: tc, ilan_id: ilanId }),
+      toast.success('Başvuru başarıyla kaydedildi!');
+
+      setFormData({
+        adSoyad: '',
+        tarih: '',
+        kurum: '',
+        kadro: '',
+        makaleler: [{ baslik: '', dosya: null }],
+        bildiriler: [{ baslik: '', dosya: null }],
+        kitaplar: [{ baslik: '', dosya: null }],
+        sanatsalCalismalar: [{ baslik: '', dosya: null }],
+        tasarimlar: [{ baslik: '', dosya: null }],
+        projeler: [{ baslik: '', dosya: null }],
+        atiflar: [{ baslik: '', dosya: null }],
+        egitimFaaliyetleri: [{ baslik: '', dosya: null }],
+        idariGorevler: [{ baslik: '', dosya: null }],
+        oduller: [{ baslik: '', dosya: null }],
+        digerFaaliyetler: [{ baslik: '', dosya: null }]
       });
 
-      if (!dbResponse.ok) {
-        console.error('Veritabanı isteği başarısız:', await dbResponse.text());
-        throw new Error('Veritabanı kaydı başarısız.');
-      }
-      console.log('Veritabanı isteği başarılı!');
-
-      alert('Başvuru başarıyla kaydedildi!');
     } catch (error) {
       console.error('handleSubmit hatası:', error);
-      alert('Başvuru sırasında hata oluştu.');
       toast.error('Sunucu hatası oluştu.');
     }
   };
@@ -128,13 +124,11 @@ function BasvuruSayfasi() {
     <div style={{ maxWidth: '800px', margin: 'auto', padding: '20px' }}>
       <h1>Başvuru Formu</h1>
       <form onSubmit={handleSubmit}>
-        {/* Ana bilgiler */}
         <input type="text" name="adSoyad" value={formData.adSoyad} onChange={handleChange} placeholder="Ad Soyad" required />
         <input type="date" name="tarih" value={formData.tarih} onChange={handleChange} required />
         <input type="text" name="kurum" value={formData.kurum} onChange={handleChange} placeholder="Kurum" required />
         <input type="text" name="kadro" value={formData.kadro} onChange={handleChange} placeholder="Kadro" required />
 
-        {/* Listeler */}
         {[
           { label: 'Makaleler', key: 'makaleler' },
           { label: 'Bildiriler', key: 'bildiriler' },

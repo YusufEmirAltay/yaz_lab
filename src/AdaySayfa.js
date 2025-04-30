@@ -74,7 +74,7 @@ const AdaySayfa = () => {
             <button
             onClick={() => {
               localStorage.setItem('ilanId', ilan.id);
-              navigate('/basvuru/:ilanId');
+              navigate('/basvuru/${ilan.id}');
             }}
             disabled={basvurulanIlanlar.includes(ilan.id)}
           >
