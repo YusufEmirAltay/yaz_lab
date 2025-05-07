@@ -1,70 +1,72 @@
-# Getting Started with Create React App
+# Akademik Portal Projesi
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Akademik Portal, adayların akademik kadrolara başvuru yapabildiği, yöneticilerin ilan yayınlayabildiği ve başvuruları görüntüleyebildiği bir web uygulamasıdır. React, Node.js, PostgreSQL ve AWS teknolojileriyle geliştirilmiştir.
 
-## Available Scripts
+## Özellikler
 
-In the project directory, you can run:
+- Aday kayıt ve giriş sistemi
+- İlan listeleme, oluşturma, düzenleme ve silme (Yönetici paneli)
+- Gelişmiş başvuru formu (metin ve dosya alanları)
+- Başvuruların AWS S3'e JSON ve PDF olarak yüklenmesi
+- Karanlık mod (dark mode) desteği
+- Bildirim sistemi (react-toastify)
+- Yöneticiler için başvuru listesi görüntüleme
 
-### `npm start`
+## Kullanılan Teknolojiler
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Frontend: React.js, React Router, Toastify
+- Backend: Node.js, Express.js
+- Veritabanı: PostgreSQL
+- Dosya Saklama: AWS S3
+- PDF Oluşturma: pdfkit, stream-buffers
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Kurulum
 
-### `npm test`
+### Backend
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Backend dizinine gidin:
+   ```bash
+   cd akademik-portal-backend
+   npm install
 
-### `npm run build`
+2. .env dosyası oluşturun ve aşağıdaki değişkenleri tanımlayın:
+   AWS_ACCESS_KEY_ID=your_aws_key
+   AWS_SECRET_ACCESS_KEY=your_aws_secret
+   AWS_REGION=eu-central-1
+   AWS_BUCKET_NAME=akademik-basvurular
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. Gerekli ek bağımlılıkları kurun
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+4. Backend sunucusunu başlatın:
+   node index.js
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+5. Frontend dizinine gidip Frontend'i başlatın:
+   cd akademik-portal-frontend
+   npm install
+   npm start
 
-### `npm run eject`
+Uygulama http://localhost:3000 adresinde çalışacaktır.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Veritabanı Yapısı
+-  PostgreSQL üzerinde aşağıdaki tablolar oluşturulmalıdır:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+-  users (id, tc, name, email, password, role, created_at)
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+-  ilanlar (id, baslik, aciklama, kadro_turu, baslangic_tarihi, bitis_tarihi, created_at)
 
-## Learn More
+-  basvurular (id, user_id, ilan_id, durum, basvuru_tarihi)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+-  Ek olarak UUID'ler için gen_random_uuid() fonksiyonu kullanılmaktadır. Eğer aktif değilse pgcrypto eklentisi etkinleştirilmelidir.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+  Proje Yapısı
+  akademik-portal/
+├── akademik-portal-backend/
+│   ├── index.js
+│   └── routes/
+├── akademik-portal-frontend/
+│   ├── src/
+│   │   ├── App.js
+│   │   ├── components/
+│   │   └── pages/
+├── README.md
