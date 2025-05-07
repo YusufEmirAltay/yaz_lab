@@ -37,15 +37,16 @@ Akademik Portal, adayların akademik kadrolara başvuru yapabildiği, yöneticil
 3. Gerekli ek bağımlılıkları kurun
 
 4. Backend sunucusunu başlatın:
+   ```bash
    node index.js
 
-5. Frontend dizinine gidip Frontend'i başlatın:
+6. Frontend dizinine gidip Frontend'i başlatın:
    ```bash
    cd akademik-portal-frontend
    npm install
    npm start
 
-Uygulama http://localhost:3000 adresinde çalışacaktır.
+Uygulama "http://localhost:3000" adresinde çalışacaktır.
 
 
 Veritabanı Yapısı
