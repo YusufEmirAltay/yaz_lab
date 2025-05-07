@@ -7,9 +7,8 @@ Akademik Portal, adayların akademik kadrolara başvuru yapabildiği, yöneticil
 - Aday kayıt ve giriş sistemi
 - İlan listeleme, oluşturma, düzenleme ve silme (Yönetici paneli)
 - Gelişmiş başvuru formu (metin ve dosya alanları)
-- Başvuruların AWS S3'e JSON ve PDF olarak yüklenmesi
+- Başvuruların AWS S3'e PDF olarak yüklenmesi
 - Karanlık mod (dark mode) desteği
-- Bildirim sistemi (react-toastify)
 - Yöneticiler için başvuru listesi görüntüleme
 
 ## Kullanılan Teknolojiler
