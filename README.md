@@ -30,10 +30,10 @@ Akademik Portal, adayların akademik kadrolara başvuru yapabildiği, yöneticil
    npm install
 
 2. .env dosyası oluşturun ve aşağıdaki değişkenleri tanımlayın:
-   AWS_ACCESS_KEY_ID=your_aws_key
-   AWS_SECRET_ACCESS_KEY=your_aws_secret
-   AWS_REGION=eu-central-1
-   AWS_BUCKET_NAME=akademik-basvurular
+  - AWS_ACCESS_KEY_ID=your_aws_key
+  - AWS_SECRET_ACCESS_KEY=your_aws_secret
+  - AWS_REGION=eu-central-1
+  - AWS_BUCKET_NAME=akademik-basvurular
 
 3. Gerekli ek bağımlılıkları kurun
 
@@ -59,14 +59,3 @@ Veritabanı Yapısı
 
 -  Ek olarak UUID'ler için gen_random_uuid() fonksiyonu kullanılmaktadır. Eğer aktif değilse pgcrypto eklentisi etkinleştirilmelidir.
 
-  Proje Yapısı
-  akademik-portal/
-├── akademik-portal-backend/
-│   ├── index.js
-│   └── routes/
-├── akademik-portal-frontend/
-│   ├── src/
-│   │   ├── App.js
-│   │   ├── components/
-│   │   └── pages/
-├── README.md
