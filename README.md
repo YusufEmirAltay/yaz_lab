@@ -41,9 +41,9 @@ Akademik Portal, adayların akademik kadrolara başvuru yapabildiği, yöneticil
 
 5. Frontend dizinine gidip Frontend'i başlatın:
    ```bash
-   -   cd akademik-portal-frontend
-   -   npm install
-   -   npm start
+   cd akademik-portal-frontend
+   npm install
+   npm start
 
 Uygulama http://localhost:3000 adresinde çalışacaktır.
 
