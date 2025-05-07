@@ -30,10 +30,10 @@ Akademik Portal, adayların akademik kadrolara başvuru yapabildiği, yöneticil
    npm install
 
 2. .env dosyası oluşturun ve aşağıdaki değişkenleri tanımlayın:
-  - AWS_ACCESS_KEY_ID=your_aws_key
-  - AWS_SECRET_ACCESS_KEY=your_aws_secret
-  - AWS_REGION=eu-central-1
-  - AWS_BUCKET_NAME=akademik-basvurular
+   - AWS_ACCESS_KEY_ID=your_aws_key
+   - AWS_SECRET_ACCESS_KEY=your_aws_secret
+   - AWS_REGION=eu-central-1
+   - AWS_BUCKET_NAME=akademik-basvurular
 
 3. Gerekli ek bağımlılıkları kurun
 
