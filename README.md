@@ -51,7 +51,7 @@ Uygulama "http://localhost:3000" adresinde çalışacaktır.
 
 
 6. Veritabanı Yapısı
-  PostgreSQL üzerinde aşağıdaki tablolar oluşturulmalıdır:
+   PostgreSQL üzerinde aşağıdaki tablolar oluşturulmalıdır:
 
 -  users (id, tc, name, email, password, role, created_at)
 
