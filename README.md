@@ -50,8 +50,8 @@ Akademik Portal, adayların akademik kadrolara başvuru yapabildiği, yöneticil
 Uygulama "http://localhost:3000" adresinde çalışacaktır.
 
 
-Veritabanı Yapısı
--  PostgreSQL üzerinde aşağıdaki tablolar oluşturulmalıdır:
+7. Veritabanı Yapısı
+  PostgreSQL üzerinde aşağıdaki tablolar oluşturulmalıdır:
 
 -  users (id, tc, name, email, password, role, created_at)
 
