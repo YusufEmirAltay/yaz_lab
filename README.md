@@ -35,13 +35,13 @@ Akademik Portal, adayların akademik kadrolara başvuru yapabildiği, yöneticil
    AWS_REGION=aws_region
    AWS_BUCKET_NAME=aws_bucket_name
 
-4. Gerekli ek bağımlılıkları kurun
+3. Gerekli ek bağımlılıkları kurun
 
-5. Backend sunucusunu başlatın:
+4. Backend sunucusunu başlatın:
    ```bash
    node index.js
 
-6. Frontend dizinine gidip Frontend'i başlatın:
+5. Frontend dizinine gidip Frontend'i başlatın:
    ```bash
    cd akademik-portal-frontend
    npm install
@@ -50,7 +50,7 @@ Akademik Portal, adayların akademik kadrolara başvuru yapabildiği, yöneticil
 Uygulama "http://localhost:3000" adresinde çalışacaktır.
 
 
-7. Veritabanı Yapısı
+6. Veritabanı Yapısı
   PostgreSQL üzerinde aşağıdaki tablolar oluşturulmalıdır:
 
 -  users (id, tc, name, email, password, role, created_at)
